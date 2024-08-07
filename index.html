@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Actividades</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        div {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="date"], input[type="time"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #2506ef;
+        }
+        .message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .btn-switch {
+            background-color: #007bff;
+            margin-bottom: 10px;
+        }
+        .btn-switch:hover {
+            background-color: #00d90e;
+        }
+        .btn-back {
+            background-color: #007bff;
+            color: white;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        function switchForm(role) {
+            document.getElementById('workerForm').style.display = role === 'worker' ? 'block' : 'none';
+            document.getElementById('btn-group').style.display = 'none'; // Hide buttons when inside a form
+        }
+
+        function goBack() {
+            document.getElementById('workerForm').style.display = 'none';
+            document.getElementById('btn-group').style.display = 'block'; // Show buttons on main interface
+        }
+
+        function handleSubmit(event, role) {
+            event.preventDefault();
+            const form = document.getElementById(role + 'Form');
+            const message = document.getElementById('message');
+
+            if (form.checkValidity()) {
+                const formData = new FormData(form);
+                formData.append('role', role);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+                    message.textContent = "Formulario enviado con éxito.";
+                    message.style.display = "block";
+                    message.style.backgroundColor = "#d4edda";
+                    message.style.color = "#155724";
+                    setTimeout(() => {
+                        message.style.display = "none";
+                        form.reset(); // Reset the form to clear all input fields
+                        goBack(); // Go back to the main interface
+                    }, 3000);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    message.textContent = "Error al enviar los datos.";
+                    message.style.display = "block";
+                    message.style.backgroundColor = "#f8d7da";
+                    message.style.color = "#721c24";
+                });
+            } else {
+                message.textContent = "Por favor, completa todos los campos requeridos.";
+                message.style.display = "block";
+                message.style.backgroundColor = "#f8d7da";
+                message.style.color = "#721c24";
+            }
+        }
+
+        function calculateHours() {
+            const horaInicio = document.getElementById('Hora_inicio').value;
+            const horaFin = document.getElementById('Hora_Fin').value;
+
+            if (horaInicio && horaFin) {
+                const inicio = new Date(`1970-01-01T${horaInicio}:00`);
+                const fin = new Date(`1970-01-01T${horaFin}:00`);
+                const diferencia = (fin - inicio) / 1000 / 60 / 60;
+
+                document.getElementById('Horas').value = diferencia > 0 ? diferencia.toFixed(2) : 0;
+            }
+        }
+
+        function fillCIP() {
+            const nombreSelect = document.getElementById('Nombre');
+            const selectedOption = nombreSelect.options[nombreSelect.selectedIndex];
+            const cipValue = selectedOption.getAttribute('data-cip');
+            document.getElementById('CIP').value = cipValue;
+        }
+
+        function updateDescripcion() {
+            const actividadPrincipal = document.getElementById('Actividad_Principal').value;
+            const descripcion = document.getElementById('Supervisiones');
+
+           
+            descripcion.innerHTML = ""; // Clear previous options
+            if (actividadPrincipal === "SOPORTE O&M") {
+                const opcionesSoporte = [
+                    {text: "Coordinaciones O&M Proyecto Lambayeque", value: "Coordinaciones O&M Proyecto Lambayeque"},
+                    {text: "Levantamiento de Observaciones - PLBY", value: "Levantamiento de Observaciones - PLBY"},
+                    {text: "Entrega de Red Transporte", value: "Entrega de Red Transporte"},
+                    {text: "Coordinaciones O&M Red - TUP Rurales", value: "Coordinaciones O&M Red - TUP Rurales"},
+                    {text: "Levantamiento de Observaciones - TUP Rurales", value: "Levantamiento de Observaciones - TUP Rurales"},
+                    {text: "Plan de Trabajo: Reducir Riesgos", value: "Plan de Trabajo: Reducir Riesgos"},
+                    {text: "Reuniones de Trabajo Varios", value: "Reuniones de Trabajo Varios"},
+                    {text: "Otros", value: "Otros"}
+                ];
+                opcionesSoporte.forEach(function(item) {
+                    let option = document.createElement("option");
+                    option.text = item.text;
+                    option.value = item.value;
+                    descripcion.add(option);
+                });
+            } else if (actividadPrincipal === "TERRITORIO O&M") {
+                const opcionesTerritorio = [
+                    {text: "Inspección O&M PLBY", value: "Inspección O&M PLBY"},
+                    {text: "Acompañamiento inspecciones PRONATEL", value: "Acompañamiento inspecciones PRONATEL"}
+                ];
+                opcionesTerritorio.forEach(function(item) {
+                    let option = document.createElement("option");
+                    option.text = item.text;
+                    option.value = item.value;
+                    descripcion.add(option);
+                });
+            }
+
+      
+        }
+
+
+
+        function updateSupervisionOptions() {
+    const supervisiones = document.getElementById('Supervisiones').value;
+    const descripcion = document.getElementById('Descripción');
+    const opciones = {
+        "Coordinaciones O&M Proyecto Lambayeque": ["Asignación de trabajos correctivos y preventivos, coordinaciones, soporte, entre otros a las rutas del PLBY"],
+        "Levantamiento de Observaciones - PLBY": ["Seguimiento al levantamiento de observaciones indicadas por PRONATEL"],
+        "Entrega de Red Transporte": ["Actividades relacionadas a la entrega de la red de Transporte del PLBY - Matriz de Actividades"],
+        "Coordinaciones O&M Red - TUP Rurales": ["Asignación de trabajos correctivos y preventivos, coordinaciones, soporte, entre otros a las rutas TUP Rurales, CALL CENTER, TGS"],
+        "Levantamiento de Observaciones - TUP Rurales": ["Seguimiento al levantamiento de observaciones indicadas por OSIPTEL"],
+        "Plan de Trabajo: Reducir Riesgos": ["Actividades relacionadas a reducir los riesgos de incumplimiento del objetivo - Matriz de Actividades"],
+        "Reuniones de Trabajo Varios": ["Reuniones de coordinación Supervisión, Cursos, Capacitaciones"],
+        "Inspección O&M PLBY": ["Inspección de trabajos de Mantenimiento Preventivo, Correctivo y trabajos A Demanda (incluye trabajos de preventivo y correctivo en Torres)"],
+        "Acompañamiento inspecciones PRONATEL": ["Preparación y participación en las inspecciones de PRONATEL"],
+        "Otros": ["Vacaciones, Permisos médicos, etc"]
+    };
+
+    descripcion.innerHTML = "";
+    if (supervisiones in opciones) {
+        opciones[supervisiones].forEach(opcion => {
+            const optionElement = document.createElement('option');
+            optionElement.value = opcion;
+            optionElement.textContent = opcion;
+            descripcion.appendChild(optionElement);
+        });
+    } else {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.textContent = "Selecciona una supervisión primero";
+        descripcion.appendChild(defaultOption);
+    }
+}
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            fillCIP();
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Registro de Actividades</h2>
+        <div class="message" id="message"></div>
+        <div id="btn-group">
+            <button class="btn-switch" onclick="switchForm('worker')">Trabajadores</button>
+            <button class="btn-switch" onclick="switchForm('manager')">Gestores</button>
+        </div>
+        <form id="workerForm" class="hidden" action="https://script.google.com/macros/s/AKfycbz58lcTIOpVOmDQOI_rfig9yxssb7DOcZsDxCMhEeU08tvbS9GpFU3BKDwnGD0Wzbib3A/exec" method="POST" onsubmit="handleSubmit(event, 'worker')">
+            <div>
+                <label for="Fecha">Fecha</label>
+                <input type="date" id="Fecha" name="Fecha" required>
+            </div>
+            <div>
+                <label for="Actividad_Principal">Actividad Principal:</label>
+                <select id="Actividad_Principal" name="Actividad_Principal" required onchange="updateDescripcion()">
+                    <option value="SOPORTE O&M">SOPORTE O&M</option>
+                    <option value="TERRITORIO O&M">TERRITORIO O&M</option>
+                </select>
+            </div>
+            <div>
+                <label for="Supervisiones">Supervisiones:</label>
+                <select id="Supervisiones" name="Supervisiones" required onchange="updateDescripcion()">
+                    <!-- Opciones dinámicamente agregadas basadas en Actividad Principal -->
+                    <option value="Coordinaciones O&M Proyecto Lambayeque">Coordinaciones O&M Proyecto Lambayeque</option>
+                    <option value="Levantamiento de Observaciones - PLBY">Levantamiento de Observaciones - PLBY</option>
+                    <option value="Entrega de Red Transporte">Entrega de Red Transporte</option>
+                    <option value="Coordinaciones O&M Red - TUP Rurales">Coordinaciones O&M Red - TUP Rurales</option>
+                    <option value="Levantamiento de Observaciones - TUP Rurales">Levantamiento de Observaciones - TUP Rurales</option>
+                    <option value="Plan de Trabajo: Reducir Riesgos">Plan de Trabajo: Reducir Riesgos</option>
+                    <option value="Reuniones de Trabajo Varios">Reuniones de Trabajo Varios</option>
+                    <option value="Inspección O&M PLBY">Inspección O&M PLBY</option>
+                    <option value="Acompañamiento inspecciones PRONATEL">Acompañamiento inspecciones PRONATEL</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
+           
+            <div>
+                <label for="Detalle">Detalle:</label>
+                <textarea id="Detalle" name="Detalle" rows="4" cols="50" required></textarea>
+            </div>
+            <div>
+                <label for="Nombre">Nombre:</label>
+                <select id="Nombre" name="Nombre" required onchange="fillCIP()">
+                    <option value="JOSE LUIS ZEA MALAGA" data-cip="177628">JOSE LUIS ZEA MALAGA</option>
+                    <option value="OSCAR OMAR VASQUEZ PANDURO" data-cip="9678867">OSCAR OMAR VASQUEZ PANDURO</option>
+                    <option value="JORGE LUIS ACOSTA OLIVERA" data-cip="7002170">JORGE LUIS ACOSTA OLIVERA</option>
+                    <option value="JORGE ADALBERTO LARA ANACLETO" data-cip="159565">JORGE ADALBERTO LARA ANACLETO</option>
+                </select>
+            </div>
+            <div>
+                <label for="CIP">CIP:</label>
+                <input type="text" id="CIP" name="CIP" required readonly>
+            </div>
+            <div>
+                <label for="Hora_inicio">Hora de Inicio:</label>
+                <input type="time" id="Hora_inicio" name="Hora_inicio" required onchange="calculateHours()">
+            </div>
+            <div>
+                <label for="Hora_Fin">Hora de Fin:</label>
+                <input type="time" id="Hora_Fin" name="Hora_Fin" required onchange="calculateHours()">
+            </div>
+            <div>
+                <label for="quiebre">¿Hubo quiebre que impidió culminar la actividad? SI/NO:</label>
+                <select id="quiebre" name="quiebre" required>
+                    <option value="SI">SI</option>
+                    <option value="NO">NO</option>
+                </select>
+            </div>
+            <div>
+                <label for="Motivo">Motivo:</label>
+                <textarea id="Motivo" name="Motivo" rows="4" cols="50" required></textarea>
+            </div>
+            <div>
+                <label for="Horas">Horas:</label>
+                <input type="number" id="Horas" name="Horas" required readonly>
+            </div>
+            <div>
+                <button type="submit">Enviar</button>
+                <button type="button" class="btn-back" onclick="goBack()">Atrás</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+
